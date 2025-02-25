@@ -16,10 +16,12 @@ const addRole = asyncHandlers(async (req, res, next) => {
     }
     const des = new designationModel({ name, permissions });
     await des.save();
-    res.status(200).json({
-      success: true,
-    });
+   return res.status(201).json(
+
+      new ApiResponse(200, des, "Role added Successfully")
+    ); 
   });
+
   
   const editRole = asyncHandler(async (req, res, next) => {
     const { name, permissions, roleId } = req.body;
@@ -40,9 +42,9 @@ const addRole = asyncHandlers(async (req, res, next) => {
       await user.save();
     });
     await role.save();
-    res.status(200).json({
-      success: true,
-    });
+    res.status(200).json(
+      new ApiResponse(200, role, "Role updated Successfully")
+    );
   });
   
   const deleteRole = asyncHandler(async (req, res, next) => {
@@ -50,15 +52,22 @@ const addRole = asyncHandlers(async (req, res, next) => {
     const role = await roleModel.findById(roleId);
     role.is_active = 0;
     await role.save();
-    res.status(200).json({
-      success: true,
-    });
+    res.status(200).json(
+      new ApiResponse(200, role, "Role deleted Successfully")
+    );
   });
   
   const getRole = asyncHandler(async (req, res, next) => {
     const roles = await roleModel.find({ is_active: 1 });
-    res.status(200).json({
-      success: true,
-      data: roles,
-    });
+    res.status(200).json(
+      new ApiResponse(200, roles, "Roles fetched Successfully")
+    );
   });
+
+
+  module.exports = {
+    addRole,
+    editRole,
+    deleteRole,
+    getRole
+  };

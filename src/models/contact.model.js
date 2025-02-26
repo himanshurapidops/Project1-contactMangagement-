@@ -1,5 +1,4 @@
-const mongoose = require("mongoose");
-
+import mongoose from "mongoose";
 const contactSchema = new mongoose.Schema({
   name: { 
     type: String, 
@@ -39,6 +38,38 @@ const contactSchema = new mongoose.Schema({
   }
 });
 
+contactSchema.pre("save", async function (next) {
 
+  if (this.isNew || this.isModified("email")) {  
+
+    if (this.email && this.email.length > 0) {
+
+      this.email = [...new Set(this.email)];
+ 
+      const existingContact = await contactModel.findOne({
+
+        email: { $in: this.email },
+
+      });
+
+      if (existingContact) {
+
+        return next(
+
+          new CustomHttpError(400, "Email already exists in certain contact")
+
+        );
+
+      }
+
+    }
+
+  }
+
+  next();
+
+});
+
+ 
 
 export const contactModel = mongoose.model('Contact', contactSchema);

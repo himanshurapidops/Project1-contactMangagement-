@@ -51,6 +51,6 @@ router.route("/teamGet").get(verifyJWT,isAdmin, getTeam);
 router.route("/contactAdd").post(verifyJWT,hasPermission('CREATE_CONTACT'), addContact);
 router.route("/contactEdit").put(verifyJWT,hasPermission('EDIT_CONTACT'), editContact);
 router.route("/contactDelete").delete(verifyJWT,hasPermission('DELETE_CONTACT'), deleteContact);
-router.route("/contactGet").get(verifyJWT, getContacts);
+router.route("/contactGet").get(verifyJWT, getContact);
 
 export default router;

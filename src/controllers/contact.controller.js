@@ -7,19 +7,17 @@ import { contactModel } from "../models/contact.model.js";
 
 const addContact = asyncHandler(async (req, res) => {
 
-
-  
-    const { name, email, message } = req.body;
+    const { name, email, phone } = req.body;
 
     if (!name) throw new ApiError(400, "Provide contact name");
     if (!email) throw new ApiError(400, "Provide contact email");
-    if (!message) throw new ApiError(400, "Provide contact message");
+    if (!phone) throw new ApiError(400, "Provide contact phone");
 
-    const existingContact = await contactModel.findOne({ email });
+    const existingContact = await contactModel.findOne({ phone });
     if (existingContact) throw new ApiError(400, "Contact already exists");
 
 
-    const newContact = await contactModel.create({ name, email, message , createdBy: req.user._id });
+    const newContact = await contactModel.create({ name, phone ,createdBy: req.user._id });
 
     if (!newContact) throw new ApiError(500, "Something went wrong");
 

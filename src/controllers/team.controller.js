@@ -85,6 +85,7 @@ const editTeam = asyncHandler(async (req, res) => {
     const { teamId } = req.body;
   
     const team = await teamModel.findByIdAndDelete(teamId);
+
     if (!team) return res.status(404).json({ message: "Team not found" });
   
     const users = await User.find({ teams: teamId });
@@ -93,7 +94,7 @@ const editTeam = asyncHandler(async (req, res) => {
         user.permissions = user.permissions.filter(
           (perm) => !team.permissions.includes(perm)
         )
-      user.teams = user.teams.filter((teamId) => teamId !== teamId);
+      user.teams = user.teams.filter((xteamId) => xteamId !== teamId);
       await user.save();
     }
   

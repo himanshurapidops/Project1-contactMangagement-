@@ -15,9 +15,7 @@ import { addTeam, deleteTeam, editTeam, getTeam } from "../controllers/team.cont
 import { addContact, deleteContact, editContact, getContact } from "../controllers/contact.controller.js";
 import  {hasPermission} from "../middlewares/hasPermission.middlewares.js"
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
-import { isAdmin } from "../middlewares/isAdmin.middlewares.js";
-
-
+import { isAdmin } from "../middlewares/isAdmin.middlewares.js"
 
 const router = Router();
 router.route("/register").post(verifyJWT,isAdmin,registerUser);
@@ -31,7 +29,6 @@ router.route("/refresuh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/update-account").patch(verifyJWT, updateAccountDetails);
-
 
 //role route
 router.route("/roleAdd").post(verifyJWT,isAdmin, addRole);

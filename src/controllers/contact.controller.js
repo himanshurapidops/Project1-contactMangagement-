@@ -3,8 +3,6 @@ import { ApiError } from "../utils/ApiError.js ";
 import {ApiResponse}  from "../utils/ApiRespons.js";
 import { contactModel } from "../models/contact.model.js";
 
-
-
 const addContact = asyncHandler(async (req, res) => {
 
     const { name, email, phone } = req.body;

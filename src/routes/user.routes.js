@@ -11,6 +11,9 @@ import {
 
 } from "../controllers/user.controller.js";
 import { addRole, deleteRole, editRole, getRole } from "../controllers/role.controller.js";
+import { addTeam, deleteTeam, editTeam, getTeam } from "../controllers/team.controller.js";
+import { addContact, deleteContact, editContact, getContacts } from "../controllers/contact.controller.js";
+
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import { isAdmin } from "../middlewares/isAdmin.middlewares.js";
 

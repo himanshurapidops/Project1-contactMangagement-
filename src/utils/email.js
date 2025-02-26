@@ -1,4 +1,5 @@
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
+
 
 const transporter = nodemailer.createTransport({
   service: process.env.SMPT_SERVICE,
@@ -7,7 +8,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMPT_PASSWORD,
   },
 });
-const sendEmail = async (options) => {
+export const sendEmail = async (options) => {
   const mailOptions = {
     from: process.env.SMPT_MAIL,
     to: options.email,
@@ -24,4 +25,4 @@ const sendEmail = async (options) => {
   });
 };
 
-module.exports = { sendEmail };
+

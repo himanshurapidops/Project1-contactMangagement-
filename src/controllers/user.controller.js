@@ -1,14 +1,16 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js ";
 import { User } from "../models/user.model.js";
-import { ApiResponse } from "../utils/ApiRespons.js";
+import {ApiResponse}  from "../utils/ApiRespons.js";
+
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
-// import bcrypt from "bcrypt"
+import { sendEmail } from "../utils/email.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
+    console.log(user);
+
     const accessToken = await user.generateAccessToken();
     const refreshToken = await user.generateRefreshToken();
 
@@ -28,15 +30,14 @@ const generateAccessAndRefreshToken = async (userId) => {
 /// only admin has right to do this
 const registerUser = asyncHandler(async (req, res) => {
 
-  const { name, email, password,role } = req.body;
+  
+  const { name, email, password,roles,permissions} = req.body;
 
   if (
     [email, name, password].some((field) => field?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are required");
   }
-
-  //check if any exist of not already
   const existedUser = await User.findOne({
     $or: [{ name }, { email }],
   });
@@ -45,12 +46,13 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User with email or name already exists");
   }
 
-  // creating user data inside the monogo collection
-
   const user = await User.create({
     email,
     password,
-    name
+    name,
+    roles,
+    permissions
+
   });
 
   // in mongo we have data of user but when we cant send all info about it , this will be available to frontend
@@ -84,11 +86,11 @@ const loginUser = asyncHandler(async (req, res) => {
   //access and referesh token
   //send cookie
 
-  const { email, name, password } = req.body;
+  const { email, password } = req.body;
   console.log(email);
 
-  if (!name && !email) {
-    throw new ApiError(400, "name or email is required");
+  if (!email) {
+    throw new ApiError(400, "email is required");
   }
 
   // Here is an alternative of above code based on logic discussed in video:
@@ -98,7 +100,7 @@ const loginUser = asyncHandler(async (req, res) => {
   // }
 
   const user = await User.findOne({
-    $or: [{ name }, { email }],
+    $or: [ { email }],
   });
 
   if (!user) {

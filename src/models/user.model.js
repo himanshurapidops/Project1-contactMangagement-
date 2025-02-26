@@ -2,25 +2,73 @@ import mongoose, { Schema } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
-const userModel = new Schema({
-  // new Schema()
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  roles: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Role' }],
-  teams: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Team' }],
-  permissions: [String],
-  createdAt: { type: Date, default: Date.now },
-  isActive: { type: Boolean, default: true },
-  isApproved : { type : Boolean, default : false},
-  refreshToken: {type: String,},
+const userSchema = new mongoose.Schema({
+  name: { 
+    type: String, 
+    required: [true, "Name is required"], 
+    trim: true, 
+    minlength: [2, "Name must be at least 2 characters long"], 
+    maxlength: [50, "Name cannot exceed 50 characters"]
+  },
+
+  email: { 
+    type: String, 
+    required: [true, "Email is required"], 
+    unique: true, 
+    trim: true, 
+    lowercase: true,
+    match: [/^\S+@\S+\.\S+$/, "Invalid email format"]
+  },
+
+  password: { 
+    type: String, 
+    required: [true, "Password is required"], 
+    minlength: [6, "Password must be at least 6 characters long"]
+  },
+
+  roles: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Role" 
+  }],
+
+  teams: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Team" 
+  }],
+
+  permissions: [{ 
+    type: String, 
+    trim: true 
+  }],
+
+  createdAt: { 
+    type: Date, 
+    default: Date.now 
+  },
+
+  isActive: { 
+    type: Boolean, 
+    default: true 
+  },
+
+  isApproved: { 
+    type: Boolean, 
+    default: false 
+  },
+
+  refreshToken: { 
+    type: String, 
+    default: null 
+  }
 });
+
 
 userModel.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
-  next();
+  next();   
 });
+
 
 userModel.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);

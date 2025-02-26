@@ -6,6 +6,9 @@ import { contactModel } from "../models/contact.model.js";
 
 
 const addContact = asyncHandler(async (req, res) => {
+
+
+  
     const { name, email, message } = req.body;
 
     if (!name) throw new ApiError(400, "Provide contact name");
@@ -23,6 +26,10 @@ const addContact = asyncHandler(async (req, res) => {
     res.status(201).json(new ApiResponse(200, newContact, "Contact added successfully"));
 });
 
+const getContact = asyncHandler(async (req, res) => {
+  const contacts = await contactModel.find().populate("createdBy");
+  res.status(200).json(new ApiResponse(200, contacts, "Contacts fetched successfully"));
+});
 
 const deleteContact = asyncHandler(async (req, res) => {
   const { contactId } = req.body;
@@ -48,4 +55,4 @@ const editContact = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, contact, "Contact updated successfully"));
 });
 
-export { addContact, getContacts, deleteContact, editContact };
+export { addContact, getContact, deleteContact, editContact };

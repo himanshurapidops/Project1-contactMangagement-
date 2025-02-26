@@ -81,7 +81,9 @@ const addRole = asyncHandler(async (req, res) => {
 
 const editRole= asyncHandler(async (req, res) => {
     const { name, permissions, roleId } = req.body;
-  
+
+    
+
     const role = await roleModel.findById(roleId);
     if (!role) return res.status(404).json({ message: "Role not found" });
   

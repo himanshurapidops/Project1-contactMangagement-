@@ -10,7 +10,7 @@ export const isAdmin = asyncHandler(async (req, _, next) => {
       throw new ApiError(404, "User not found");
     }
 
-    if (!user.roles.includes(process.env.ADMIN_ROLE_ID)) {
+    if (!user.roles.includes(process.env.ADMIN_ROLE_ID))  {
       throw new ApiError(403, "Access denied");
     }
 

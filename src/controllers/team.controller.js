@@ -9,10 +9,11 @@ const addTeam = asyncHandler(async (req, res) => {
     const { name, members, permissions } = req.body;
 
     if (!name) throw new ApiError(400, "Provide team name");
-    if (!members || members.length === 0) throw new ApiError(400, "Provide team members");    
-    if (!permissions || permissions.length === 0) throw new ApiError(400, "Provide team permissions");
+    if (!members || members?.length === 0) throw new ApiError(400, "Provide team members");    
+    if (!permissions || permissions?.length === 0) throw new ApiError(400, "Provide team permissions");
 
     const existingTeam = await teamModel.findOne({ name });
+
     if (existingTeam) throw new ApiError(400, "Team already exists");
 
     const newTeam = await teamModel.create({ name, members, permissions });
@@ -31,9 +32,17 @@ const addTeam = asyncHandler(async (req, res) => {
 
 
 const editTeam = asyncHandler(async (req, res) => {
-    const { name, members, permissions, teamId } = req.body;
+
+    const { teamId } = req.params;
+    const { name, members, permissions } = req.body;
+
+    if (!name) throw new ApiError(400, "Provide team name");
+    if (!members || members?.length === 0) throw new ApiError(400, "Provide team members");
+    if (!permissions || permissions?.length === 0) throw new ApiError(400, "Provide team permissions");
+    if (!teamId) throw new ApiError(400, "Provide team id");
 
     const team = await teamModel.findById(teamId);
+
     if (!team) return res.status(404).json({ message: "Team not found" });
 
     const users = await User.find({ teams: teamId });
@@ -42,14 +51,9 @@ const editTeam = asyncHandler(async (req, res) => {
       user.permissions = user.permissions.filter(
         (perm) => !team.permissions.includes(perm)
       );
-      await user.save();
-    }
-
-    for (const user of users) {
       user.teams = user.teams.filter((xTeamId) => teamId !== xTeamId);
       await user.save();
     }
-
 
     for (const member of members) {
       const user = await User.findById(member);
@@ -69,7 +73,7 @@ const editTeam = asyncHandler(async (req, res) => {
     for(const member of team.members){
       const user = await User.findById(member);
       for(const permission of team.permissions){
-        member.permissions.push(permission);
+        user.permissions.push(permission);
         await user.save();
       }
     }
@@ -82,7 +86,10 @@ const editTeam = asyncHandler(async (req, res) => {
 
 
   const deleteTeam = asyncHandler(async (req, res) => {
+
     const { teamId } = req.body;
+
+    if (!teamId) throw new ApiError(400, "Provide team id");
   
     const team = await teamModel.findByIdAndDelete(teamId);
 
@@ -105,14 +112,18 @@ const editTeam = asyncHandler(async (req, res) => {
     const { teamId } = req.params;
   
     const team = await teamModel.findById(teamId);
-    
+
     if (!team) return res.status(404).json({ message: "Team not found" });
   
     res.status(200).json(new ApiResponse(200, team, "Team fetched successfully"));
   });
 
   const getTeams = asyncHandler(async (req, res) => {
+
+
     const teams = await teamModel.find();
+
+    if (!teams) return res.status(404).json({ message: "Teams not found" });
   
     res.status(200).json(new ApiResponse(200, teams, "Teams fetched successfully"));
   });

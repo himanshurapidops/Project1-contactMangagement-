@@ -29,7 +29,6 @@ const generateAccessAndRefreshToken = async (userId) => {
   }
 };
 
-
 /// only admin has right to do this
 const registerUser = asyncHandler(async (req, res) => {
 

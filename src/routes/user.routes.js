@@ -10,33 +10,36 @@ import {
   setPassword
 
 } from "../controllers/user.controller.js";
-import { addRole, deleteRole, editRole, getRole } from "../controllers/role.controller.js";
-import { addTeam, deleteTeam, editTeam, getTeam } from "../controllers/team.controller.js";
+import { addRole, deleteRole, editRole, getRole , getRoles} from "../controllers/role.controller.js";
+import { addTeam, deleteTeam, editTeam, getTeam , getTeams} from "../controllers/team.controller.js";
 import { addContact, deleteContact, editContact, getContact, getContacts } from "../controllers/contact.controller.js";
 import  {hasPermission} from "../middlewares/hasPermission.middlewares.js"
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import { isAdmin } from "../middlewares/isAdmin.middlewares.js"
+
 // import { loginLimiter } from "../app.js";
 
 
 const router = Router();
-router.route("/register").post(verifyJWT,isAdmin,registerUser);
+router.route("/register").post(isAdmin,registerUser);
 router.route("/login").post(loginUser); 
 
 //secure route
 
 router.route("/logout").post(verifyJWT, logoutUser);
-router.route("/set-password").post(setPassword); 
-router.route("/refresuh-token").post(refreshAccessToken);
+router.route("/set-password").post(setPassword); // do i need to protect it ??
+router.route("/refresh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 router.route("/update-account").patch(verifyJWT, updateAccountDetails);
 
 //role route
+
 router.route("/roleAdd").post(verifyJWT,isAdmin, addRole);
 router.route("/roleEdit").post(verifyJWT,isAdmin, editRole);
 router.route("/roleDelete").post(verifyJWT,isAdmin, deleteRole);
 router.route("/roleGet").get(verifyJWT,isAdmin, getRole);
+router.route("/rolesGet").get(verifyJWT,isAdmin, getRoles);
 
 // team route 
 
@@ -44,6 +47,7 @@ router.route("/teamAdd").post(verifyJWT,isAdmin, addTeam);
 router.route("/teamEdit").post(verifyJWT,isAdmin, editTeam);
 router.route("/teamDelete").post(verifyJWT,isAdmin, deleteTeam);
 router.route("/teamGet").get(verifyJWT,isAdmin, getTeam);
+router.route("/teamsGet").get(verifyJWT,isAdmin, getTeams);
 
 //contact route
 

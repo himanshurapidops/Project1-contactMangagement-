@@ -114,18 +114,26 @@ const editRole= asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, null, "Role deleted successfully"));
   });
   
+  const getRole = asyncHandler(async (req, res) => {
+    const { roleId } = req.params;
   
-  const getRole = asyncHandler(async (req, res, _) => {
+    const role = await roleModel.findById(roleId);
+    if (!role) return res.status(404).json({ message: "Role not found" });
+
+    res.status(200).json(new ApiResponse(200, role, "Role fetched successfully"));
+  });
+
+  const getRoles = asyncHandler(async (req, res, _) => {
     const roles = await roleModel.find();
     res.status(200).json(
       new ApiResponse(200, roles, "Roles fetched Successfully")
     );
   });
 
-
   export  {
     addRole,
     editRole,
     deleteRole,
-    getRole
+    getRole,
+    getRoles
   };

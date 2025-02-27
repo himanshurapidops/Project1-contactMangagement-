@@ -102,7 +102,7 @@ const editTeam = asyncHandler(async (req, res) => {
   });
 
   const getTeam = asyncHandler(async (req, res) => {
-    const { teamId } = req.body;
+    const { teamId } = req.params;
   
     const team = await teamModel.findById(teamId);
     
@@ -111,5 +111,11 @@ const editTeam = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, team, "Team fetched successfully"));
   });
 
+  const getTeams = asyncHandler(async (req, res) => {
+    const teams = await teamModel.find();
+  
+    res.status(200).json(new ApiResponse(200, teams, "Teams fetched successfully"));
+  });
 
-export {addTeam,editTeam,deleteTeam,getTeam}
+
+export {addTeam,editTeam,deleteTeam,getTeam,getTeams}

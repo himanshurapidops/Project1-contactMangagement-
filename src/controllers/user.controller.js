@@ -2,14 +2,17 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js ";
 import { User } from "../models/user.model.js";
 import {ApiResponse}  from "../utils/ApiRespons.js";
-
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/email.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
+
     const user = await User.findById(userId);
-    console.log(user);
+    
+    if (!user) {
+      throw new ApiError(404, "User not found while generating access token and refresh token");
+    }
 
     const accessToken = await user.generateAccessToken();
     const refreshToken = await user.generateRefreshToken();
@@ -30,14 +33,18 @@ const generateAccessAndRefreshToken = async (userId) => {
 /// only admin has right to do this
 const registerUser = asyncHandler(async (req, res) => {
 
-  
-  const { name, email, password,roles,permissions} = req.body;
+  const { name, email, password, roles, permissions} = req.body;
+
+  if(roles?.length == 0 || permissions?.length == 0){
+    throw new ApiError(400,"Roles or  permissions are required")
+  }
 
   if (
     [email, name, password].some((field) => field?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are required");
   }
+
   const existedUser = await User.findOne({
     $or: [{ name }, { email }],
   });
@@ -55,7 +62,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
   });
 
-  // in mongo we have data of user but when we cant send all info about it , this will be available to frontend
 
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
@@ -81,16 +87,17 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
 
   const { email, password } = req.body;
-  console.log(email);
-  console.log(password);
 
   if (!email) {
     throw new ApiError(400, "email is required");
   }
 
+  if (!password) {
+    throw new ApiError(400, "password is required");
+  }
 
   const user = await User.findOne({
-    $or: [ { email }],
+    $or: [{ email }],
   });
 
   if (!user) {
@@ -98,11 +105,12 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
+
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid user credentials");
   }
 
-  // giveing access and refresh Token
+  // giving Access and refresh Token
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user._id
@@ -113,12 +121,15 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
+  if (!loggedInUser) {
+    throw new ApiError(500, "Something went wrong while logging in the user");
+  }
+
   const options = {
     httpOnly: true,
     secure: true,
   };
 
-  /// passing cookies
   return res
     .status(200)
     .cookie("accessToken", accessToken, options)
@@ -137,7 +148,11 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-  /// req has access of user._id
+
+  if (!req.user) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
   await User.findByIdAndUpdate(
     req.user._id,
     {
@@ -162,7 +177,10 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged Out"));
 });
 
+
+
 const refreshAccessToken = asyncHandler(async (req, res) => {
+
   const incomingRefreshToken =
     req.cookies.refreshToken || req.body.refreshToken;
 
@@ -170,11 +188,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, "unauthorized request");
   }
 
+
   try {
     const decodedToken = jwt.verify(
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET
     );
+
+    if (!decodedToken) {
+      throw new ApiError(401, "Invalid refresh token");
+    }
 
     const user = await User.findById(decodedToken?._id);
 
@@ -187,9 +210,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
     const options = {
-      httpOnly: true, // means javascript will not be able to access , in cookies
+      httpOnly: true,
       secure: true,
-      sameSite: strict,
+      sameSite: "strict",
     };
 
     const {
@@ -216,8 +239,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const setPassword = asyncHandler(async (req, res) => {
   const { password, conformPassword } = req.body;
 
+  if (!password || !conformPassword) {
+    throw new ApiError(400, "All fields are required");
+  }
+
   if (password !== conformPassword) {
-    throw new ApiError(400, "conform password and newpassword are not same   ");
+    throw new ApiError(400, "conform password and new password are not same");
   }
 
   await User.findByIdAndUpdate(
@@ -239,7 +266,13 @@ const setPassword = asyncHandler(async (req, res) => {
 
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
+
+  
   const { oldPassword, newPassword, conformPassword } = req.body;
+
+  if (!oldPassword || !newPassword || !conformPassword) {
+    throw new ApiError(400, "All fields are required");
+  }
 
   if (newPassword !== conformPassword) {
     throw new ApiError(400, "conform password and newpassword are not same   ");
@@ -266,7 +299,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   ).select("-password");
 
   //   user.password = newPassword;
-  //   await user.save({ validateBeforeSave: false });
+    await user.save({ validateBeforeSave: false });
 
   return res
     .status(200)
@@ -274,10 +307,17 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+
+  const user = await User.findById(req.user?._id);
+
+  if (!user) {
+    throw new ApiError(404, "User does not exist");
+  }
+
   return res.status(200).json(
     new ApiResponse(
       200,
-      req.user, 
+      user, 
       "User fetched successfully"
     )
   );
@@ -285,11 +325,12 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
   const { name, email } = req.body;
+
   if (!name || !email) {
     throw new ApiError(400, "All field are required");
   }
 
-  const user = User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
@@ -301,7 +342,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
       new: true,
     }
   ).select("-password");
-  console.log(user);
+
   return res
     .status(200)
     .json(new ApiResponse(200, user, "account details updated successfully"));

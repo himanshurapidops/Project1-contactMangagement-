@@ -62,10 +62,11 @@ app.use(
       origin: "http://localhost:5173", 
       credentials: true, 
       methods: ["GET", "POST", "PUT", "DELETE","PATCH"],
-      allowedHeaders: ["Content-Type", "Authorization"],""
+      allowedHeaders: ["Content-Type", "Authorization"],
       exposedHeaders: ["Set-Cookie"],
-      optionsSuccessStatus: 200
-      
+      optionsSuccessStatus: 200,
+      preflightContinue: true,
+      maxAge: 86400,
     })
   );
 

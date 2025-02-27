@@ -12,10 +12,12 @@ import {
 } from "../controllers/user.controller.js";
 import { addRole, deleteRole, editRole, getRole } from "../controllers/role.controller.js";
 import { addTeam, deleteTeam, editTeam, getTeam } from "../controllers/team.controller.js";
-import { addContact, deleteContact, editContact, getContact } from "../controllers/contact.controller.js";
+import { addContact, deleteContact, editContact, getContact, getContacts } from "../controllers/contact.controller.js";
 import  {hasPermission} from "../middlewares/hasPermission.middlewares.js"
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import { isAdmin } from "../middlewares/isAdmin.middlewares.js"
+// import { loginLimiter } from "../app.js";
+
 
 const router = Router();
 router.route("/register").post(verifyJWT,isAdmin,registerUser);
@@ -48,6 +50,8 @@ router.route("/teamGet").get(verifyJWT,isAdmin, getTeam);
 router.route("/contactAdd").post(verifyJWT,hasPermission('CREATE_CONTACT'), addContact);
 router.route("/contactEdit").put(verifyJWT,hasPermission('EDIT_CONTACT'), editContact);
 router.route("/contactDelete").delete(verifyJWT,hasPermission('DELETE_CONTACT'), deleteContact);
-router.route("/contactGet").get(verifyJWT, getContact);
+router.route("/contactsGet").get(verifyJWT, getContacts);
+router.route("/contactGet/:contactId").get(verifyJWT, getContact);
 
 export default router;
+

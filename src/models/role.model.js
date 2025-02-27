@@ -16,10 +16,8 @@ const roleSchema = new mongoose.Schema({
     required: [true, "At least one permission is required"] 
   }],  
 
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
-  }
-});
+ 
+},{
+  timestamps  : true})
 
 export const roleModel = mongoose.model("Role", roleSchema);

@@ -8,17 +8,22 @@ const contactSchema = new mongoose.Schema({
     maxlength: [50, "Name cannot exceed 50 characters"]
   },
 
-  email: [{ 
-    type: String, 
-    trim: true,
-    lowercase: true,
-    match: [/^\S+@\S+\.\S+$/, "Invalid email format"]
+  email: [ {
+    type: String,
+    required: true,
+    validate: {
+      validator: function(v) {
+        return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v);
+      },
+      message: props => `${props.value} is not a valid email!`
+    }
   }],
 
-  phone: { 
-    type: String, 
+  phone: {
+    type: String,
     trim: true,
-    match: [/^\+?\d{10,15}$/, "Invalid phone number format"] 
+    match: [/^\+?\d{10,15}$/, 'Invalid phone number format'],
+    required: [true, 'Phone number is required']
   },
 
   createdBy: { 
@@ -32,10 +37,9 @@ const contactSchema = new mongoose.Schema({
     ref: "User" 
   },
 
-  createdAt: { 
-    type: Date, 
-    default: Date.now 
-  }
+  
+},{
+  timestamps  : true
 });
 
 contactSchema.pre("save", async function (next) {

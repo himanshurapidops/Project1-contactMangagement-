@@ -79,25 +79,15 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  // req body -> data
-  // name or email
-  //find the user
-  //password check
-  //access and referesh token
-  //send cookie
 
   const { email, password } = req.body;
   console.log(email);
+  console.log(password);
 
   if (!email) {
     throw new ApiError(400, "email is required");
   }
 
-  // Here is an alternative of above code based on logic discussed in video:
-  // if (!(name || email)) {
-  //     throw new ApiError(400, "name or email is required")
-
-  // }
 
   const user = await User.findOne({
     $or: [ { email }],
@@ -106,9 +96,6 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "User does not exist");
   }
-
-  //   const p = await bcrypt.compare( password, user.password)
-  //   console.log(p)
 
   const isPasswordValid = await user.isPasswordCorrect(password);
   if (!isPasswordValid) {
@@ -126,7 +113,6 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  // something
   const options = {
     httpOnly: true,
     secure: true,

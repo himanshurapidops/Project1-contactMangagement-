@@ -7,25 +7,25 @@ const asyncHandler = (requestHandler)=>{
     }
 }       
 
+// {
+// // const asyncHandler = (fn)=>()=>{}
+// // const asyncHandler = (fn)=>{()=>};
 
-// const asyncHandler = (fn)=>()=>{}
-// const asyncHandler = (fn)=>{()=>};
 
 
+// // const asyncHandler = (fn)=> async(req,res,next)=>{
 
-// const asyncHandler = (fn)=> async(req,res,next)=>{
+// //     try{
 
-//     try{
+// //         await fn(req,res,next);
 
-//         await fn(req,res,next);
+// //     }catch (error){
 
-//     }catch (error){
-
-//         res.status(err.code||500).json({
-//             success:false,
-//             message:err.message,
-//         })
-//     }
+// //         res.status(err.code||500).json({
+// //             success:false,
+// //             message:err.message,
+// //         })
+// //     }
+// // }
 // }
-
 export {asyncHandler}

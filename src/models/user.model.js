@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
@@ -10,52 +10,45 @@ const userModel = new mongoose.Schema({
     minlength: [2, "Name must be at least 2 characters long"], 
     maxlength: [50, "Name cannot exceed 50 characters"]
   },
-
-  email: { 
-    type: String, 
-    required: [true, "Email is required"], 
-    unique: true, 
-    trim: true, 
-    lowercase: true,
-    match: [/^\S+@\S+\.\S+$/, "Invalid email format"]
+  email: {
+    type: String,
+    required: true,
+    validate: {
+      validator: function(v) {
+        return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v);
+      },
+      message: props => `${props.value} is not a valid email!`
+    }
   },
-
   password: { 
     type: String, 
     required: [true, "Password is required"], 
     minlength: [6, "Password must be at least 6 characters long"]
   },
-
   roles: [{ 
     type: mongoose.Schema.Types.ObjectId, 
     ref: "Role" 
   }],
-
   teams: [{ 
     type: mongoose.Schema.Types.ObjectId, 
     ref: "Team" 
   }],
-
   permissions: [{ 
     type: String, 
     trim: true 
   }],
-
   createdAt: { 
     type: Date, 
     default: Date.now 
   },
-
   isActive: { 
     type: Boolean, 
     default: true 
   },
-
   isApproved: { 
     type: Boolean, 
     default: false 
   },
-
   refreshToken: { 
     type: String, 
     default: null 
@@ -105,4 +98,4 @@ userModel.methods.generateRefreshToken = function () {
 };
 
 
-export const User = mongoose.model("User", userModel);
+export const User = mongoose.model("User", userModel);  

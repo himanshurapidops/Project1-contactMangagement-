@@ -105,6 +105,7 @@ const editTeam = asyncHandler(async (req, res) => {
     const { teamId } = req.body;
   
     const team = await teamModel.findById(teamId);
+    
     if (!team) return res.status(404).json({ message: "Team not found" });
   
     res.status(200).json(new ApiResponse(200, team, "Team fetched successfully"));

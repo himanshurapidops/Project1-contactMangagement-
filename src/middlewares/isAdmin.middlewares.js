@@ -14,5 +14,7 @@ export const isAdmin = asyncHandler(async (req, _, next) => {
       throw new ApiError(403, "Access denied");
     }
 
+    req.user = user;
+
     next();
   });

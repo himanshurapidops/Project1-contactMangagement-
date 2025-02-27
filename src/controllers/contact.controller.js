@@ -22,9 +22,20 @@ const addContact = asyncHandler(async (req, res) => {
     res.status(201).json(new ApiResponse(200, newContact, "Contact added successfully"));
 });
 
-const getContact = asyncHandler(async (req, res) => {
+const getContacts = asyncHandler(async (req, res) => {
+
   const contacts = await contactModel.find().populate("createdBy");
   res.status(200).json(new ApiResponse(200, contacts, "Contacts fetched successfully"));
+  
+});
+
+const getContact = asyncHandler(async (req, res) => {
+  const { contactId } = req.params;
+  const contact = await contactModel.findById(contactId).populate("createdBy");
+
+  if (!contact) throw new ApiError(404, "Contact not found"); 
+
+  res.status(200).json(new ApiResponse(200, contact, "Contact fetched successfully"));
 });
 
 const deleteContact = asyncHandler(async (req, res) => {
@@ -51,4 +62,4 @@ const editContact = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, contact, "Contact updated successfully"));
 });
 
-export { addContact, getContact, deleteContact, editContact };
+export { addContact, getContact, getContacts,deleteContact, editContact };

@@ -3,7 +3,7 @@ import {asyncHandler} from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js";
 
  const hasPermission = (requiredPermission) =>
-    asyncHandler(async (req, _, next) => {
+    asyncHandler(async (req,_, next) => {
       const user = await User.findById(req.user._id);
   
       if (!user) {
@@ -13,7 +13,7 @@ import {ApiError} from "../utils/ApiError.js";
       if (!user.permissions.includes(requiredPermission)) {
         throw new ApiError(403, "Access denied");
       }
-  
+
       next();
     });
   

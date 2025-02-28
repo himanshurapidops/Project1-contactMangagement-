@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import {ApiResponse}  from "../utils/ApiRespons.js";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/email.js";
+import crypto from "crypto";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -30,16 +31,30 @@ const generateAccessAndRefreshToken = async (userId) => {
 };
 
 /// only admin has right to do this
+
 const registerUser = asyncHandler(async (req, res) => {
 
-  const { name, email, password, roles, permissions} = req.body;
+  const { name, email, password, roles, permissions,teams} = req.body;
 
   if(roles?.length == 0 || permissions?.length == 0){
     throw new ApiError(400,"Roles or  permissions are required")
   }
 
+  if(!teams){
+    throw new ApiError(400,"Team is required")
+  }
+
+  let finalPassword = password;
+
+  if(!password){
+
+
+    finalPassword = crypto.randomBytes(20).toString("hex");
+  }
+
+
   if (
-    [email, name, password].some((field) => field?.trim() === "")
+    [email, name].some((field) => field?.trim() === "")
   ) {
     throw new ApiError(400, "All fields are required");
   }
@@ -54,9 +69,10 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const user = await User.create({
     email,
-    password,
+    password : finalPassword,
     name,
     roles,
+    teams,
     permissions
 
   });

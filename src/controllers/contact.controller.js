@@ -24,7 +24,7 @@ const addContact = asyncHandler(async (req, res) => {
 
 const getContacts = asyncHandler(async (_, res) => {
 
-  const contacts = await contactModel.find().populate("createdBy");
+  const contacts = await contactModel.find().populate("createdBy", "_id");
 
   res.status(200).json(new ApiResponse(200, contacts, "Contacts fetched successfully"));
   

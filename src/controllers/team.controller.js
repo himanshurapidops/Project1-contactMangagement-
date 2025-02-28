@@ -9,8 +9,8 @@ const addTeam = asyncHandler(async (req, res) => {
     const { name, members, permissions } = req.body;
 
     if (!name) throw new ApiError(400, "Provide team name");
-    if (!members || members?.length === 0) throw new ApiError(400, "Provide team members");    
-    if (!permissions || permissions?.length === 0) throw new ApiError(400, "Provide team permissions");
+    if (!members) throw new ApiError(400, "Provide team members");    
+    if (!permissions) throw new ApiError(400, "Provide team permissions");
 
     const existingTeam = await teamModel.findOne({ name });
 
@@ -18,7 +18,7 @@ const addTeam = asyncHandler(async (req, res) => {
 
     const newTeam = await teamModel.create({ name, members, permissions });
 
-    for (const member of members) {
+    for (const member of members) { 
       const user = await User.findById(member);
       if (!user) throw new ApiError(400, "User not found");
       user.teams.push(newTeam._id);
@@ -32,57 +32,47 @@ const addTeam = asyncHandler(async (req, res) => {
 
 
 const editTeam = asyncHandler(async (req, res) => {
+  const { teamId } = req.params;
+  const { name, members, permissions } = req.body;
 
-    const { teamId } = req.params;
-    const { name, members, permissions } = req.body;
+  if (!name) throw new ApiError(400, "Provide team name");
+  if (!members || !Array.isArray(members)) throw new ApiError(400, "Provide valid team members");
+  if (!permissions || !Array.isArray(permissions)) throw new ApiError(400, "Provide valid team permissions");
+  if (!teamId) throw new ApiError(400, "Provide team ID");
 
-    if (!name) throw new ApiError(400, "Provide team name");
-    if (!members || members?.length === 0) throw new ApiError(400, "Provide team members");
-    if (!permissions || permissions?.length === 0) throw new ApiError(400, "Provide team permissions");
-    if (!teamId) throw new ApiError(400, "Provide team id");
+  const team = await teamModel.findById(teamId);
+  if (!team) return res.status(404).json({ message: "Team not found" });
 
-    const team = await teamModel.findById(teamId);
+  const existingUsers = await User.find({ teams: teamId });
 
-    if (!team) return res.status(404).json({ message: "Team not found" });
-
-    const users = await User.find({ teams: teamId });
-
-    for (const user of users) {
-      user.permissions = user.permissions.filter(
-        (perm) => !team.permissions.includes(perm)
-      );
-      user.teams = user.teams.filter((xTeamId) => teamId !== xTeamId);
-      await user.save();
-    }
-
-    for (const member of members) {
-      const user = await User.findById(member);
-      if (!user) throw new ApiError(400, "User not found");
-      user.teams.push(teamId);
-      await user.save();
-    }
-
-    for (const permission of permissions) {
-      team.permissions.push(permission);
-    }
-
-    for (const member of members) {
-      team.members.push(member);
-    }
-
-    for(const member of team.members){
-      const user = await User.findById(member);
-      for(const permission of team.permissions){
-        user.permissions.push(permission);
-        await user.save();
+  for (const user of existingUsers) {
+    for (const perm of team.permissions) {
+      const index = user.permissions.indexOf(perm);
+      if (index !== -1) {
+          user.permissions.splice(index, 1); 
       }
     }
-  
-    team.name = name;
-    await team.save();
+      user.teams = user.teams.filter(tId => !tId.equals(teamId)); 
+      await user.save();
+  }
 
-    res.status(200).json(new ApiResponse(200, team, "Team updated successfully"));
-  });
+  team.name = name;
+  team.members = members;
+  team.permissions = permissions;
+  await team.save();
+
+  for (const memberId of members) {
+      const user = await User.findById(memberId);
+      if (!user) throw new ApiError(400, "User not found");
+
+      if (!user.teams.includes(teamId)) user.teams.push(teamId);
+
+      user.permissions.push(...permissions);  
+      await user.save();
+  }
+
+  res.status(200).json(new ApiResponse(200, team, "Team updated successfully"));
+});
 
 
   const deleteTeam = asyncHandler(async (req, res) => {
@@ -90,6 +80,8 @@ const editTeam = asyncHandler(async (req, res) => {
     const { teamId } = req.body;
 
     if (!teamId) throw new ApiError(400, "Provide team id");
+
+    
   
     const team = await teamModel.findByIdAndDelete(teamId);
 
@@ -98,9 +90,14 @@ const editTeam = asyncHandler(async (req, res) => {
     const users = await User.find({ teams: teamId });
   
     for (const user of users) {
-        user.permissions = user.permissions.filter(
-          (perm) => !team.permissions.includes(perm)
-        )
+     
+        for (const perm of team.permissions) {
+          const index = user.permissions.indexOf(perm);
+          if (index !== -1) {
+              user.permissions.splice(index, 1); 
+          }
+        }
+
       user.teams = user.teams.filter((xteamId) => xteamId !== teamId);
       await user.save();
     }
